@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34202.233
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "挂起进程_命令行版", "挂起进程\挂起进程_命令行版.csproj", "{C224679A-9132-494A-B78D-CD4A50487E3E}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "暂停进程", "暂停进程\暂停进程.csproj", "{08A50220-EFB8-47A5-9AA6-D56D4D78D92F}"
 EndProject
 Global
@@ -13,10 +11,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{C224679A-9132-494A-B78D-CD4A50487E3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C224679A-9132-494A-B78D-CD4A50487E3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C224679A-9132-494A-B78D-CD4A50487E3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C224679A-9132-494A-B78D-CD4A50487E3E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{08A50220-EFB8-47A5-9AA6-D56D4D78D92F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{08A50220-EFB8-47A5-9AA6-D56D4D78D92F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{08A50220-EFB8-47A5-9AA6-D56D4D78D92F}.Release|Any CPU.ActiveCfg = Release|Any CPU

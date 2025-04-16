@@ -35,7 +35,7 @@ Windows下的进程冻结工具，通过创新的"替代窗口"交互方式，�
 **Q：遇到无法恢复的程序怎么办？**  
 A：建议使用[System Informer](https://github.com/winsiderss/systeminformer)等专业工具手动恢复或终止进程
 
-**Q：部分程序图标显示不正常？**  
+**Q：部分程序图标无法提取？**  
 A：已知问题，作者暂时解决不了，不过这样的程序很少（目前发现的只有[Project-Graph](https://github.com/LiRenTech/project-graph)无法正常提取）
 
 ## 🌱 参与贡献
