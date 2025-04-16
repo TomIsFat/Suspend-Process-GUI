@@ -6,9 +6,9 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Media.Imaging;
 
-namespace 暂停进程
+namespace ProcessSuspender.Services
 {
-    public static class WindowManager
+    public class WindowManager : IWindowManager
     {
         [DllImport("user32.dll")]
         public static extern IntPtr WindowFromPoint(Point p);
@@ -46,11 +46,28 @@ namespace 暂停进程
         [DllImport("gdi32.dll")]
         private static extern int GetDeviceCaps(IntPtr hdc, int nIndex);
 
+        [DllImport("user32.dll")]
+        private static extern IntPtr SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern IntPtr GetClassLongPtr(IntPtr hWnd, int nIndex);
+
+        [DllImport("user32.dll", SetLastError = true, EntryPoint = "GetClassLong")]
+        private static extern IntPtr GetClassLong32(IntPtr hWnd, int nIndex);
+
+        [DllImport("user32.dll")]
+        private static extern bool DestroyIcon(IntPtr hIcon);
+
         public const int SW_HIDE = 0;
         public const int SW_SHOW = 5;
         private const int LOGPIXELSX = 88;
+        private const int WM_GETICON = 0x007F;
+        private const int ICON_SMALL = 0;
+        private const int ICON_BIG = 1;
+        private const int GCL_HICON = -14;
+        private const int GCL_HICONSM = -34;
 
-        enum GetAncestorFlags
+        private enum GetAncestorFlags
         {
             GetRoot = 2
         }
@@ -64,7 +81,10 @@ namespace 暂停进程
             public int Bottom;
         }
 
-        public static float GetWindowDpiScale(IntPtr hwnd)
+        /// <summary>
+        /// 获取窗口DPI缩放比例
+        /// </summary>
+        public float GetWindowDpiScale(IntPtr hwnd)
         {
             if (Environment.OSVersion.Version.Major >= 10)
             {
@@ -85,7 +105,10 @@ namespace 暂停进程
             return 1.0f;
         }
 
-        public static Rectangle GetLogicalWindowRect(IntPtr hwnd)
+        /// <summary>
+        /// 获取窗口逻辑矩形
+        /// </summary>
+        public Rectangle GetLogicalWindowRect(IntPtr hwnd)
         {
             GetWindowRect(hwnd, out RECT rect);
             float scale = GetWindowDpiScale(hwnd);
@@ -96,13 +119,19 @@ namespace 暂停进程
                 (int)((rect.Bottom - rect.Top) / scale));
         }
 
-        public static IntPtr GetWindowUnderCursor()
+        /// <summary>
+        /// 获取鼠标下的窗口句柄
+        /// </summary>
+        public IntPtr GetWindowUnderCursor()
         {
             GetCursorPos(out Point point);
             return WindowFromPoint(point);
         }
 
-        public static Bitmap CaptureWindow(IntPtr handle)
+        /// <summary>
+        /// 捕获窗口截图
+        /// </summary>
+        public Bitmap CaptureWindow(IntPtr handle)
         {
             GetWindowRect(handle, out RECT rect);
             var bounds = new Rectangle(rect.Left, rect.Top, rect.Right - rect.Left, rect.Bottom - rect.Top);
@@ -114,7 +143,10 @@ namespace 暂停进程
             }
         }
 
-        public static BitmapSource ConvertBitmapToBitmapSource(Bitmap bitmap)
+        /// <summary>
+        /// 将Bitmap转换为BitmapSource
+        /// </summary>
+        public BitmapSource ConvertBitmapToBitmapSource(Bitmap bitmap)
         {
             using (MemoryStream memory = new MemoryStream())
             {
@@ -129,36 +161,80 @@ namespace 暂停进程
             }
         }
 
-        public static IntPtr GetTopLevelWindowUnderCursor()
+        /// <summary>
+        /// 获取鼠标下的顶级窗口句柄
+        /// </summary>
+        public IntPtr GetTopLevelWindowUnderCursor()
         {
             return GetAncestor(GetWindowUnderCursor(), GetAncestorFlags.GetRoot);
         }
 
-        public static int GetWindowProcessId(IntPtr hwnd)
+        /// <summary>
+        /// 获取窗口进程ID
+        /// </summary>
+        public int GetWindowProcessId(IntPtr hwnd)
         {
             GetWindowThreadProcessId(hwnd, out int processId);
             return processId;
         }
 
-        public static void HideWindow(IntPtr hwnd)
+        /// <summary>
+        /// 隐藏窗口
+        /// </summary>
+        public void HideWindow(IntPtr hwnd)
         {
             ShowWindow(hwnd, SW_HIDE);
         }
 
-        public static void ShowWindowNormal(IntPtr hwnd)
+        /// <summary>
+        /// 显示窗口
+        /// </summary>
+        public void ShowWindowNormal(IntPtr hwnd)
         {
             ShowWindow(hwnd, SW_SHOW);
         }
 
-        public static void MoveExternalWindow(IntPtr hwnd, int x, int y, int nWidth, int nHeight, bool bRepaint)
+        /// <summary>
+        /// 移动外部窗口
+        /// </summary>
+        public void MoveExternalWindow(IntPtr hwnd, int x, int y, int nWidth, int nHeight, bool bRepaint)
         {
             MoveWindow(hwnd, x, y, nWidth, nHeight, bRepaint);
         }
 
-        public static string GetWindowTitle(IntPtr hwnd)
+        /// <summary>
+        /// 获取窗口标题
+        /// </summary>
+        public string GetWindowTitle(IntPtr hwnd)
         {
             StringBuilder buff = new StringBuilder(256);
             return GetWindowText(hwnd, buff, buff.Capacity) > 0 ? buff.ToString() : string.Empty;
+        }
+
+        /// <summary>
+        /// 获取窗口图标句柄
+        /// </summary>
+        public IntPtr GetWindowIconHandle(IntPtr hWnd, bool bigIcon)
+        {
+            IntPtr hIcon = SendMessage(hWnd, WM_GETICON, bigIcon ? ICON_BIG : ICON_SMALL, 0);
+            if (hIcon == IntPtr.Zero)
+            {
+                hIcon = Environment.Is64BitProcess
+                    ? GetClassLongPtr(hWnd, bigIcon ? GCL_HICON : GCL_HICONSM)
+                    : GetClassLong32(hWnd, bigIcon ? GCL_HICON : GCL_HICONSM);
+            }
+            return hIcon;
+        }
+
+        /// <summary>
+        /// 销毁图标
+        /// </summary>
+        public void DestroyIconSafe(IntPtr hIcon)
+        {
+            if (hIcon != IntPtr.Zero)
+            {
+                DestroyIcon(hIcon);
+            }
         }
     }
 }

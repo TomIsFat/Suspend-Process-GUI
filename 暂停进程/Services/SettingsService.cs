@@ -3,21 +3,19 @@ using System.IO;
 using System.Windows.Forms;
 using Newtonsoft.Json;
 
-namespace 暂停进程
+namespace ProcessSuspender.Services
 {
-    public class Settings
+    public class SettingsService : ISettingsService
     {
-        public Keys Key { get; set; } = Keys.Oemtilde;
-        public bool Control { get; set; } = true;
-        public bool Shift { get; set; } = false;
-        public bool Alt { get; set; } = false;
-
         private static readonly string SettingsPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "ProcessSuspender",
             "settings.json");
 
-        public static Settings Load()
+        /// <summary>
+        /// 获取当前设置
+        /// </summary>
+        public Settings GetSettings()
         {
             try
             {
@@ -34,12 +32,15 @@ namespace 暂停进程
             return new Settings();
         }
 
-        public void Save()
+        /// <summary>
+        /// 保存设置
+        /// </summary>
+        public void SaveSettings(Settings settings)
         {
             try
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(SettingsPath));
-                string json = JsonConvert.SerializeObject(this, Formatting.Indented);
+                string json = JsonConvert.SerializeObject(settings, Formatting.Indented);
                 File.WriteAllText(SettingsPath, json);
             }
             catch (Exception ex)

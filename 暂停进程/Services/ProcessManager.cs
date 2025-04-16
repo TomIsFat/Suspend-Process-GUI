@@ -6,38 +6,13 @@ using System.Management;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace 暂停进程
+namespace ProcessSuspender.Services
 {
-    public static class PauseFunction
+    public class ProcessManager : IProcessManager
     {
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool IsWindowVisible(IntPtr hWnd);
-        public static List<IntPtr> GetProcessVisibleWindows(int processId)
-        {
-            List<IntPtr> handles = new List<IntPtr>();
-            EnumWindows((hWnd, lParam) =>
-            {
-                GetWindowThreadProcessId(hWnd, out int pid);
-                if (pid == processId && IsWindowVisible(hWnd))
-                {
-                    handles.Add(hWnd);
-                }
-                return true;
-            }, IntPtr.Zero);
-            return handles;
-        }
-
-        private static readonly HashSet<string> ProtectedProcessNames = new HashSet<string>
-        {
-            "explorer", "quicker", "devenv"
-        };
-
-        [Flags]
-        public enum ProcessAccessFlags : uint
-        {
-            SuspendResume = 0x0800
-        }
 
         [DllImport("ntdll.dll", SetLastError = true)]
         private static extern int NtSuspendProcess(IntPtr processHandle);
@@ -66,18 +41,32 @@ namespace 暂停进程
         [DllImport("user32.dll")]
         private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
-        public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
-
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
 
-        enum GetAncestorFlags
+        public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+
+        private enum GetAncestorFlags
         {
             GetRoot = 2
         }
 
-        public static void SuspendOrResumeProcess(bool suspend, IntPtr hwnd, List<int> ignoredPids = null, bool includeChildProcesses = true)
+        [Flags]
+        private enum ProcessAccessFlags : uint
+        {
+            SuspendResume = 0x0800
+        }
+
+        private static readonly HashSet<string> ProtectedProcessNames = new HashSet<string>
+        {
+            "explorer", "quicker", "devenv"
+        };
+
+        /// <summary>
+        /// 挂起指定窗口的进程
+        /// </summary>
+        public void SuspendProcess(IntPtr hwnd, bool includeChildProcesses = true)
         {
             IntPtr topLevelHwnd = GetAncestor(hwnd, GetAncestorFlags.GetRoot);
             GetWindowThreadProcessId(topLevelHwnd, out int pid);
@@ -91,28 +80,80 @@ namespace 暂停进程
 
             foreach (int processId in processesToHandle)
             {
-                if ((ignoredPids == null || !ignoredPids.Contains(processId)) &&
-                    processId != currentProcessId &&
-                    !IsProtectedProcess(processId))
+                if (processId != currentProcessId && !IsProtectedProcess(processId))
                 {
                     string originalTitle = GetWindowTitle(topLevelHwnd);
-                    if (suspend)
+                    if (!originalTitle.StartsWith("已挂起-"))
                     {
-                        if (!originalTitle.StartsWith("已挂起-"))
-                        {
-                            SetWindowText(topLevelHwnd, "已挂起-" + originalTitle);
-                        }
-                        SuspendProcess(processId);
+                        SetWindowText(topLevelHwnd, "已挂起-" + originalTitle);
                     }
-                    else
-                    {
-                        ResumeProcess(processId, topLevelHwnd);
-                    }
+                    SuspendProcessCore(processId);
                 }
             }
         }
 
-        private static List<int> GetChildProcessIds(int parentPid)
+        /// <summary>
+        /// 恢复指定窗口的进程
+        /// </summary>
+        public void ResumeProcess(IntPtr hwnd, bool includeChildProcesses = true)
+        {
+            IntPtr topLevelHwnd = GetAncestor(hwnd, GetAncestorFlags.GetRoot);
+            GetWindowThreadProcessId(topLevelHwnd, out int pid);
+            int currentProcessId = Process.GetCurrentProcess().Id;
+
+            List<int> processesToHandle = new List<int> { pid };
+            if (includeChildProcesses)
+            {
+                processesToHandle.AddRange(GetChildProcessIds(pid));
+            }
+
+            foreach (int processId in processesToHandle)
+            {
+                if (processId != currentProcessId && !IsProtectedProcess(processId))
+                {
+                    ResumeProcessCore(processId, topLevelHwnd);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 检查进程是否受保护
+        /// </summary>
+        public bool IsProtectedProcess(int pid)
+        {
+            try
+            {
+                var process = Process.GetProcessById(pid);
+                return ProtectedProcessNames.Contains(process.ProcessName.ToLower());
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 获取进程的所有可见窗口
+        /// </summary>
+        public List<IntPtr> GetProcessVisibleWindows(int processId)
+        {
+            List<IntPtr> handles = new List<IntPtr>();
+            EnumWindows((hWnd, lParam) =>
+            {
+                GetWindowThreadProcessId(hWnd, out int pid);
+                if (pid == processId && IsWindowVisible(hWnd))
+                {
+                    handles.Add(hWnd);
+                }
+                return true;
+            }, IntPtr.Zero);
+            return handles;
+        }
+
+        /// <summary>
+        /// 获取子进程ID列表
+        /// </summary>
+        private List<int> GetChildProcessIds(int parentPid)
         {
             List<int> childPids = new List<int>();
             try
@@ -132,7 +173,10 @@ namespace 暂停进程
             return childPids;
         }
 
-        private static void SuspendProcess(int pid)
+        /// <summary>
+        /// 核心挂起进程逻辑
+        /// </summary>
+        private void SuspendProcessCore(int pid)
         {
             IntPtr handle = OpenProcess(ProcessAccessFlags.SuspendResume, false, pid);
             if (handle == IntPtr.Zero) return;
@@ -140,7 +184,10 @@ namespace 暂停进程
             CloseHandle(handle);
         }
 
-        private static void ResumeProcess(int pid, IntPtr hwnd)
+        /// <summary>
+        /// 核心恢复进程逻辑
+        /// </summary>
+        private void ResumeProcessCore(int pid, IntPtr hwnd)
         {
             IntPtr handle = OpenProcess(ProcessAccessFlags.SuspendResume, false, pid);
             if (handle == IntPtr.Zero) return;
@@ -154,36 +201,13 @@ namespace 暂停进程
             }
         }
 
-        private static string GetWindowTitle(IntPtr hwnd)
+        /// <summary>
+        /// 获取窗口标题
+        /// </summary>
+        private string GetWindowTitle(IntPtr hwnd)
         {
             StringBuilder buff = new StringBuilder(256);
             return GetWindowText(hwnd, buff, buff.Capacity) > 0 ? buff.ToString() : string.Empty;
-        }
-
-        public static bool EnumTheWindowsAndDisplay(IntPtr hWnd, IntPtr lParam)
-        {
-            if (hWnd == IntPtr.Zero) return true;
-
-            string title = GetWindowTitle(hWnd);
-            if (!string.IsNullOrEmpty(title) && title.StartsWith("已挂起-"))
-            {
-                SuspendOrResumeProcess(false, hWnd, null, true);
-                ShowWindow(hWnd, 5); // SW_SHOW
-            }
-            return true;
-        }
-
-        public static bool IsProtectedProcess(int pid)
-        {
-            try
-            {
-                var process = Process.GetProcessById(pid);
-                return ProtectedProcessNames.Contains(process.ProcessName.ToLower());
-            }
-            catch
-            {
-                return false;
-            }
         }
     }
 }

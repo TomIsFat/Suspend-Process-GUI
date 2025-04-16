@@ -3,38 +3,49 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
+using ProcessSuspender.Models;
+using ProcessSuspender.Services;
+using static ProcessSuspender.Services.WindowManager;
 
-namespace 暂停进程
+namespace ProcessSuspender
 {
     public partial class ScreenshotWindow : Window
     {
         private readonly WindowInfo _windowInfo;
         private readonly MainWindow _mainWindow;
+        private readonly IProcessManager _processManager;
+        private readonly IWindowManager _windowManager;
 
-        public ScreenshotWindow(BitmapSource screenshotSource, WindowInfo windowInfo, MainWindow mainWindow)
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        public ScreenshotWindow(BitmapSource screenshotSource, WindowInfo windowInfo, MainWindow mainWindow,
+            IProcessManager processManager, IWindowManager windowManager)
         {
             InitializeComponent();
             ScreenshotImage.Source = screenshotSource;
             _windowInfo = windowInfo;
             _mainWindow = mainWindow;
+            _processManager = processManager;
+            _windowManager = windowManager;
             DataContext = windowInfo;
 
             Loaded += (s, e) =>
             {
-                // 隐藏所有相关窗口
                 foreach (var handle in _windowInfo.WindowHandles)
                 {
-                    WindowManager.HideWindow(handle);
+                    _windowManager.HideWindow(handle);
                 }
 
-                // 异步挂起主窗口所属进程
-                Task.Run(() => PauseFunction.SuspendOrResumeProcess(true, _windowInfo.Handle, null, true));
+                Task.Run(() => _processManager.SuspendProcess(_windowInfo.Handle, true));
             };
         }
 
+        /// <summary>
+        /// 处理鼠标左键按下
+        /// </summary>
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed && e.ClickCount == 1)
@@ -43,11 +54,17 @@ namespace 暂停进程
             }
         }
 
+        /// <summary>
+        /// 处理鼠标双击
+        /// </summary>
         private void Window_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             Close();
         }
 
+        /// <summary>
+        /// 处理键盘按下
+        /// </summary>
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
@@ -55,27 +72,27 @@ namespace 暂停进程
                 Close();
             }
         }
+        [DllImport("user32.dll")]
+        public static extern bool GetWindowRect(IntPtr hWnd, out RECT rect);
 
+        /// <summary>
+        /// 窗口关闭时处理
+        /// </summary>
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
             base.OnClosing(e);
 
-            // 恢复进程
-            PauseFunction.SuspendOrResumeProcess(false, _windowInfo.Handle, null, true);
-
-            // 显示所有相关窗口
+            _processManager.ResumeProcess(_windowInfo.Handle, true);
             foreach (var handle in _windowInfo.WindowHandles)
             {
-                WindowManager.ShowWindowNormal(handle);
+                _windowManager.ShowWindowNormal(handle);
             }
 
-            // 恢复窗口位置
-            WindowManager.GetWindowRect(_windowInfo.Handle, out WindowManager.RECT rect);
-            float factor = WindowManager.GetWindowDpiScale(_windowInfo.Handle);
-            WindowManager.MoveExternalWindow(_windowInfo.Handle, (int)(Left * factor), (int)(Top * factor),
+            GetWindowRect(_windowInfo.Handle, out WindowManager.RECT rect);
+            float factor = _windowManager.GetWindowDpiScale(_windowInfo.Handle);
+            _windowManager.MoveExternalWindow(_windowInfo.Handle, (int)(Left * factor), (int)(Top * factor),
                 rect.Right - rect.Left, rect.Bottom - rect.Top, true);
 
-            // 更新主窗口状态
             var windowModel = _mainWindow.WindowModels.FirstOrDefault(wm => wm.ProcessId == _windowInfo.ProcessId);
             if (windowModel != null)
             {
@@ -86,6 +103,9 @@ namespace 暂停进程
             _mainWindow.RemoveWindowInfo(_windowInfo);
         }
 
+        /// <summary>
+        /// 窗口关闭后清理
+        /// </summary>
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);

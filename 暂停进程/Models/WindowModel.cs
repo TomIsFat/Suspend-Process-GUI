@@ -1,22 +1,39 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using ProcessSuspender.Services;
+using 暂停进程;
 
-namespace 暂停进程
+namespace ProcessSuspender.Models
 {
     public class WindowModel : INotifyPropertyChanged
     {
         private string _status;
         private string _toggleSuspendText;
         private readonly MainWindow _mainWindow;
+        private readonly IProcessManager _processManager;
+        private readonly IWindowManager _windowManager;
 
+        /// <summary>
+        /// 窗口标题
+        /// </summary>
         public string Title { get; set; }
+
+        /// <summary>
+        /// 进程ID
+        /// </summary>
         public int ProcessId { get; set; }
+
+        /// <summary>
+        /// 窗口信息
+        /// </summary>
         public WindowInfo WindowInfo { get; set; }
 
+        /// <summary>
+        /// 状态（已挂起/正常）
+        /// </summary>
         public string Status
         {
             get => _status;
@@ -27,6 +44,9 @@ namespace 暂停进程
             }
         }
 
+        /// <summary>
+        /// 切换挂起/恢复按钮文本
+        /// </summary>
         public string ToggleSuspendText
         {
             get => _toggleSuspendText;
@@ -37,7 +57,14 @@ namespace 暂停进程
             }
         }
 
+        /// <summary>
+        /// 切换挂起/恢复命令
+        /// </summary>
         public ICommand ToggleSuspendCommand { get; }
+
+        /// <summary>
+        /// 移除命令
+        /// </summary>
         public ICommand RemoveCommand { get; }
 
         public class RelayCommand : ICommand
@@ -60,21 +87,28 @@ namespace 暂停进程
             }
         }
 
-        public WindowModel(MainWindow mainWindow)
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        public WindowModel(MainWindow mainWindow, IProcessManager processManager, IWindowManager windowManager)
         {
             _mainWindow = mainWindow;
+            _processManager = processManager;
+            _windowManager = windowManager;
             ToggleSuspendCommand = new RelayCommand(ToggleSuspend);
             RemoveCommand = new RelayCommand(RemoveProcess);
         }
 
+        /// <summary>
+        /// 切换进程挂起/恢复状态
+        /// </summary>
         private void ToggleSuspend(object parameter)
         {
             if (Status == "已挂起")
             {
-                PauseFunction.SuspendOrResumeProcess(false, WindowInfo.Handle, null, true);
-                WindowManager.ShowWindowNormal(WindowInfo.Handle);
+                _processManager.ResumeProcess(WindowInfo.Handle, true);
+                _windowManager.ShowWindowNormal(WindowInfo.Handle);
 
-                // 查找并关闭对应的 ScreenshotWindow
                 var screenshotWindow = Application.Current.Windows.OfType<ScreenshotWindow>()
                     .FirstOrDefault(w => w.DataContext == WindowInfo);
                 screenshotWindow?.Close();
@@ -89,28 +123,29 @@ namespace 暂停进程
             }
         }
 
+        /// <summary>
+        /// 移除进程并恢复
+        /// </summary>
         private void RemoveProcess(object parameter)
         {
-            // 恢复进程
-            PauseFunction.SuspendOrResumeProcess(false, WindowInfo.Handle, null, true);
-
-            // 显示所有相关窗口
+            _processManager.ResumeProcess(WindowInfo.Handle, true);
             foreach (var handle in WindowInfo.WindowHandles)
             {
-                WindowManager.ShowWindowNormal(handle);
+                _windowManager.ShowWindowNormal(handle);
             }
 
-            // 查找并关闭对应的 ScreenshotWindow
             var screenshotWindow = Application.Current.Windows.OfType<ScreenshotWindow>()
                 .FirstOrDefault(w => w.DataContext == WindowInfo);
             screenshotWindow?.Close();
 
-            // 从主窗口移除
-            _mainWindow.RemoveWindowInfo(WindowInfo);
+            _mainWindow.RemoveWindowInfo(WindowInfo);  // 移除窗口信息
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        /// <summary>
+        /// 属性变更通知
+        /// </summary>
         protected void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

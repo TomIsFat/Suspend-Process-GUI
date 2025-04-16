@@ -3,8 +3,10 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
+using ProcessSuspender.Services;
+using 暂停进程;
 
-namespace 暂停进程
+namespace ProcessSuspender
 {
     public partial class App : Application
     {
@@ -21,6 +23,10 @@ namespace 暂停进程
 
         private const int SW_RESTORE = 9;
 
+        /// <summary>
+        /// 应用程序启动时执行
+        /// </summary>
+        /// <param name="e">启动参数</param>
         protected override void OnStartup(StartupEventArgs e)
         {
             const string appName = "ProcessSuspender";
@@ -30,7 +36,6 @@ namespace 暂停进程
 
             if (!createdNew)
             {
-                // 应用程序已在运行，激活已有实例
                 Process current = Process.GetCurrentProcess();
                 foreach (Process process in Process.GetProcessesByName(current.ProcessName))
                 {
@@ -51,7 +56,15 @@ namespace 暂停进程
             }
 
             base.OnStartup(e);
-            new MainWindow().Show();
+
+            // 初始化服务
+            var processManager = new ProcessManager();
+            var windowManager = new WindowManager();
+            var settingsService = new SettingsService();
+            var trayService = new TrayService();
+
+            // 创建主窗口并注入服务
+            new MainWindow(processManager, windowManager, settingsService, trayService).Show();
         }
     }
 }

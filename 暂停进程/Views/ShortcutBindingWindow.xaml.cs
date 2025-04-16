@@ -1,24 +1,32 @@
 ﻿using System;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
+using ProcessSuspender.Services;
 
-namespace 暂停进程
+namespace ProcessSuspender
 {
     public partial class ShortcutBindingWindow : Window
     {
+        private readonly ISettingsService _settingsService;
         private Settings _settings;
 
-        public ShortcutBindingWindow(Window owner)
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        public ShortcutBindingWindow(Window owner, ISettingsService settingsService)
         {
             InitializeComponent();
             Owner = owner;
-            _settings = Settings.Load();
+            _settingsService = settingsService;
+            _settings = _settingsService.GetSettings();
             UpdateTextBox();
             ShortcutTextBox.Focus();
         }
 
+        /// <summary>
+        /// 更新快捷键显示文本
+        /// </summary>
         private void UpdateTextBox()
         {
             string shortcut = "";
@@ -29,14 +37,14 @@ namespace 暂停进程
             ShortcutTextBox.Text = shortcut;
         }
 
+        /// <summary>
+        /// 处理键盘按下事件
+        /// </summary>
         protected override void OnKeyDown(System.Windows.Input.KeyEventArgs e)
         {
             e.Handled = true;
 
-            // Convert WPF Key to Windows Forms Keys
             Keys key = (Keys)KeyInterop.VirtualKeyFromKey(e.Key);
-
-            // Ignore modifier keys alone
             if (key == Keys.ControlKey || key == Keys.ShiftKey || key == Keys.Menu)
                 return;
 
@@ -48,13 +56,19 @@ namespace 暂停进程
             UpdateTextBox();
         }
 
+        /// <summary>
+        /// 处理确定按钮点击
+        /// </summary>
         private void Confirm_Click(object sender, RoutedEventArgs e)
         {
-            _settings.Save();
+            _settingsService.SaveSettings(_settings);
             DialogResult = true;
             Close();
         }
 
+        /// <summary>
+        /// 处理取消按钮点击
+        /// </summary>
         private void Cancel_Click(object sender, RoutedEventArgs e)
         {
             DialogResult = false;

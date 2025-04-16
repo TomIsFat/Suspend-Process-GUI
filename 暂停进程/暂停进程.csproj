@@ -70,19 +70,23 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Setting.cs" />
-    <Compile Include="ShortcutBindingWindow.xaml.cs">
+    <Compile Include="Services\IProcessManager.cs" />
+    <Compile Include="Services\ISettingsService.cs" />
+    <Compile Include="Services\ITrayService.cs" />
+    <Compile Include="Services\IWindowManager.cs" />
+    <Compile Include="Services\ProcessManager.cs" />
+    <Compile Include="Services\SettingsService.cs" />
+    <Compile Include="Views\ShortcutBindingWindow.xaml.cs">
       <DependentUpon>ShortcutBindingWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="WindowsCloner.cs" />
-    <Compile Include="PauseFunction.cs" />
-    <Compile Include="ScreenshotWindow.xaml.cs">
+    <Compile Include="Services\TrayService.cs" />
+    <Compile Include="Views\ScreenshotWindow.xaml.cs">
       <DependentUpon>ScreenshotWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="WindowInfo.cs" />
-    <Compile Include="WindowManager.cs" />
-    <Compile Include="WindowModel.cs" />
-    <Page Include="MainWindow.xaml">
+    <Compile Include="Models\WindowInfo.cs" />
+    <Compile Include="Services\WindowManager.cs" />
+    <Compile Include="Models\WindowModel.cs" />
+    <Page Include="Views\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -90,15 +94,15 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="MainWindow.xaml.cs">
+    <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="ScreenshotWindow.xaml">
+    <Page Include="Views\ScreenshotWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="ShortcutBindingWindow.xaml">
+    <Page Include="Views\ShortcutBindingWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
