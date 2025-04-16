@@ -32,6 +32,9 @@ Windows下的进程冻结工具，通过创新的"替代窗口"交互方式，�
 
 ## ❓ 常见问题
 
+**Q：某些进程无法暂停怎么办？**  
+A：以管理员权限运行程序
+
 **Q：遇到无法恢复的程序怎么办？**  
 A：建议使用[System Informer](https://github.com/winsiderss/systeminformer)等专业工具手动恢复或终止进程
 
