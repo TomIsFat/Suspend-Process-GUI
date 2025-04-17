@@ -141,23 +141,44 @@ namespace ProcessSuspender.Services
         /// 获取子进程ID列表
         private List<int> GetChildProcessIds(int parentPid)
         {
-            List<int> childPids = new List<int>();
+            HashSet<int> visited = new HashSet<int>();
+            Queue<int> queue = new Queue<int>();
+            List<int> result = new List<int>();
+
+            queue.Enqueue(parentPid);
+            visited.Add(parentPid);
+
             try
             {
-                using (var searcher = new ManagementObjectSearcher($"SELECT ProcessID FROM Win32_Process WHERE ParentProcessID = {parentPid}"))
+                while (queue.Count > 0)
                 {
-                    foreach (ManagementObject obj in searcher.Get())
+                    int currentPid = queue.Dequeue();
+
+                    using (var searcher = new ManagementObjectSearcher(
+                        $"SELECT ProcessID FROM Win32_Process WHERE ParentProcessID = {currentPid}"))
                     {
-                        childPids.Add(Convert.ToInt32(obj["ProcessID"]));
+                        foreach (ManagementObject obj in searcher.Get())
+                        {
+                            int childPid = Convert.ToInt32(obj["ProcessID"]);
+                            if (!visited.Contains(childPid))
+                            {
+                                result.Add(childPid);
+                                visited.Add(childPid);
+                                queue.Enqueue(childPid);
+                            }
+                        }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"获取子进程ID失败: {ex.Message}");
+                Console.WriteLine($"递归获取子进程ID失败: {ex.Message}");
             }
-            return childPids;
+
+            result.Remove(parentPid); // 去除根节点自身
+            return result;
         }
+
 
         /// 核心挂起进程逻辑
         private void SuspendProcessCore(int pid)
