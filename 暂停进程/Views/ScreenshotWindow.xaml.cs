@@ -97,7 +97,7 @@ namespace ProcessSuspender
             if (windowModel != null)
             {
                 windowModel.Status = "正常";
-                windowModel.ToggleStatusText = "挂起";
+                windowModel.ToggleStatusText = "正常";
             }
         }
 

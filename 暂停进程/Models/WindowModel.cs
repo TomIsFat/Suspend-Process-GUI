@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
@@ -81,8 +82,8 @@ namespace ProcessSuspender.Models
             _windowManager = windowManager;
             ToggleSuspendCommand = new RelayCommand(ToggleSuspend);
             RemoveCommand = new RelayCommand(RemoveProcess);
-            Status = "运行中";
-            ToggleStatusText = "冻结中";
+            Status = "冻结"; // 新建的时候默认为冻结状态
+            ToggleStatusText = "冻结";
         }
 
         /// 切换进程冻结/运行状态
@@ -97,11 +98,14 @@ namespace ProcessSuspender.Models
                     .FirstOrDefault(w => w.DataContext == WindowInfo);
                 screenshotWindow?.Close();
 
-                //_mainWindow.RemoveWindowInfo(WindowInfo);  //从列表中移除，但是现在我们不希望这样做
+                Status = "正常";
+                ToggleStatusText = "正常";
             }
             else
             {
-                _mainWindow.SuspendProcess();  // 修改这里，并非挂起前台，而是挂起当前的
+                _mainWindow.CreateMockWindowFor(WindowInfo);
+                Status = "冻结";
+                ToggleStatusText = "冻结";
             }
         }
 

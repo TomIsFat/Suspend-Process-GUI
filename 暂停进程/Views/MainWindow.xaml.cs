@@ -96,31 +96,24 @@ namespace ProcessSuspender
             }
 
             var windowModel = WindowModels.FirstOrDefault(wm => wm.ProcessId == processId);
-            if (windowModel != null) // 若在主界面列表中找到了
+            if (windowModel != null) // 若在主界面列表中找到了，先删除再添加
             {
-                windowModel.Status = "冻结";
-                windowModel.ToggleStatusText = "恢复";
-                windowModel.WindowInfo.WindowHandles = _processManager.GetProcessVisibleWindows(processId);  // 将所有的可视的窗口加入WindowsInfo中
-                CreateMockWindowFor(windowModel.WindowInfo);
+                WindowModels.Remove(windowModel);
             }
-            else
+            WindowInfo windowInfo = new WindowInfo
             {
-                WindowInfo windowInfo = new WindowInfo
-                {
-                    Handle = topLevelHwnd,
-                    Title = _windowManager.GetWindowTitle(topLevelHwnd),
-                    ProcessId = processId,
-                    WindowHandles = _processManager.GetProcessVisibleWindows(processId)
-                };
-                CreateMockWindowFor(windowInfo);
-                AddWindowInfo(windowInfo);
-            }
+                Handle = topLevelHwnd,
+                Title = _windowManager.GetWindowTitle(topLevelHwnd),
+                ProcessId = processId,
+                WindowHandles = _processManager.GetProcessVisibleWindows(processId)
+            };
+            CreateMockWindowFor(windowInfo);
+            AddWindowInfo(windowInfo);
         }
 
 
         // 为挂起的窗口创建截图窗口
-
-        private void CreateMockWindowFor(WindowInfo windowInfo)
+        public void CreateMockWindowFor(WindowInfo windowInfo)
         {
             try
             {
@@ -204,7 +197,7 @@ namespace ProcessSuspender
 
 
         // 添加窗口信息到DataGrid
-        private void AddWindowInfo(WindowInfo windowInfo)
+        public void AddWindowInfo(WindowInfo windowInfo)
         {
             if (windowInfo == null || windowInfo.ProcessId <= 0 || string.IsNullOrEmpty(windowInfo.Title))
             {
