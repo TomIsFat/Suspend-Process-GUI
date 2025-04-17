@@ -81,7 +81,7 @@ namespace ProcessSuspender.Services
             public int Bottom;
         }
 
-        /// <summary>
+
         /// 获取窗口DPI缩放比例
         /// </summary>
         public float GetWindowDpiScale(IntPtr hwnd)
@@ -105,7 +105,7 @@ namespace ProcessSuspender.Services
             return 1.0f;
         }
 
-        /// <summary>
+
         /// 获取窗口逻辑矩形
         /// </summary>
         public Rectangle GetLogicalWindowRect(IntPtr hwnd)
@@ -119,7 +119,7 @@ namespace ProcessSuspender.Services
                 (int)((rect.Bottom - rect.Top) / scale));
         }
 
-        /// <summary>
+
         /// 获取鼠标下的窗口句柄
         /// </summary>
         public IntPtr GetWindowUnderCursor()
@@ -128,7 +128,7 @@ namespace ProcessSuspender.Services
             return WindowFromPoint(point);
         }
 
-        /// <summary>
+
         /// 捕获窗口截图
         /// </summary>
         public Bitmap CaptureWindow(IntPtr handle)
@@ -143,7 +143,7 @@ namespace ProcessSuspender.Services
             }
         }
 
-        /// <summary>
+
         /// 将Bitmap转换为BitmapSource
         /// </summary>
         public BitmapSource ConvertBitmapToBitmapSource(Bitmap bitmap)
@@ -161,7 +161,7 @@ namespace ProcessSuspender.Services
             }
         }
 
-        /// <summary>
+
         /// 获取鼠标下的顶级窗口句柄
         /// </summary>
         public IntPtr GetTopLevelWindowUnderCursor()
@@ -169,7 +169,7 @@ namespace ProcessSuspender.Services
             return GetAncestor(GetWindowUnderCursor(), GetAncestorFlags.GetRoot);
         }
 
-        /// <summary>
+
         /// 获取窗口进程ID
         /// </summary>
         public int GetWindowProcessId(IntPtr hwnd)
@@ -178,7 +178,7 @@ namespace ProcessSuspender.Services
             return processId;
         }
 
-        /// <summary>
+
         /// 隐藏窗口
         /// </summary>
         public void HideWindow(IntPtr hwnd)
@@ -186,7 +186,7 @@ namespace ProcessSuspender.Services
             ShowWindow(hwnd, SW_HIDE);
         }
 
-        /// <summary>
+
         /// 显示窗口
         /// </summary>
         public void ShowWindowNormal(IntPtr hwnd)
@@ -194,7 +194,7 @@ namespace ProcessSuspender.Services
             ShowWindow(hwnd, SW_SHOW);
         }
 
-        /// <summary>
+
         /// 移动外部窗口
         /// </summary>
         public void MoveExternalWindow(IntPtr hwnd, int x, int y, int nWidth, int nHeight, bool bRepaint)
@@ -202,7 +202,7 @@ namespace ProcessSuspender.Services
             MoveWindow(hwnd, x, y, nWidth, nHeight, bRepaint);
         }
 
-        /// <summary>
+
         /// 获取窗口标题
         /// </summary>
         public string GetWindowTitle(IntPtr hwnd)
@@ -211,7 +211,7 @@ namespace ProcessSuspender.Services
             return GetWindowText(hwnd, buff, buff.Capacity) > 0 ? buff.ToString() : string.Empty;
         }
 
-        /// <summary>
+
         /// 获取窗口图标句柄
         /// </summary>
         public IntPtr GetWindowIconHandle(IntPtr hWnd, bool bigIcon)
@@ -226,7 +226,7 @@ namespace ProcessSuspender.Services
             return hIcon;
         }
 
-        /// <summary>
+
         /// 销毁图标
         /// </summary>
         public void DestroyIconSafe(IntPtr hIcon)

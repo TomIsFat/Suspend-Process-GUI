@@ -16,22 +16,22 @@ namespace ProcessSuspender.Models
         private readonly IProcessManager _processManager;
         private readonly IWindowManager _windowManager;
 
-        /// <summary>
+
         /// 窗口标题
         /// </summary>
         public string Title { get; set; }
 
-        /// <summary>
+
         /// 进程ID
         /// </summary>
         public int ProcessId { get; set; }
 
-        /// <summary>
+
         /// 窗口信息
         /// </summary>
         public WindowInfo WindowInfo { get; set; }
 
-        /// <summary>
+
         /// 状态（已挂起/正常）
         /// </summary>
         public string Status
@@ -44,7 +44,7 @@ namespace ProcessSuspender.Models
             }
         }
 
-        /// <summary>
+
         /// 切换挂起/恢复按钮文本
         /// </summary>
         public string ToggleSuspendText
@@ -57,12 +57,12 @@ namespace ProcessSuspender.Models
             }
         }
 
-        /// <summary>
+
         /// 切换挂起/恢复命令
         /// </summary>
         public ICommand ToggleSuspendCommand { get; }
 
-        /// <summary>
+
         /// 移除命令
         /// </summary>
         public ICommand RemoveCommand { get; }
@@ -87,7 +87,7 @@ namespace ProcessSuspender.Models
             }
         }
 
-        /// <summary>
+
         /// 构造函数
         /// </summary>
         public WindowModel(MainWindow mainWindow, IProcessManager processManager, IWindowManager windowManager)
@@ -99,7 +99,7 @@ namespace ProcessSuspender.Models
             RemoveCommand = new RelayCommand(RemoveProcess);
         }
 
-        /// <summary>
+
         /// 切换进程挂起/恢复状态
         /// </summary>
         private void ToggleSuspend(object parameter)
@@ -123,7 +123,7 @@ namespace ProcessSuspender.Models
             }
         }
 
-        /// <summary>
+
         /// 移除进程并恢复
         /// </summary>
         private void RemoveProcess(object parameter)
@@ -143,7 +143,7 @@ namespace ProcessSuspender.Models
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        /// <summary>
+
         /// 属性变更通知
         /// </summary>
         protected void OnPropertyChanged(string propertyName)

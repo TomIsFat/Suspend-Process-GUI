@@ -11,7 +11,7 @@ namespace ProcessSuspender
         private readonly ISettingsService _settingsService;
         private Settings _settings;
 
-        /// <summary>
+
         /// 构造函数
         /// </summary>
         public ShortcutBindingWindow(Window owner, ISettingsService settingsService)
@@ -24,7 +24,7 @@ namespace ProcessSuspender
             ShortcutTextBox.Focus();
         }
 
-        /// <summary>
+
         /// 更新快捷键显示文本
         /// </summary>
         private void UpdateTextBox()
@@ -37,7 +37,7 @@ namespace ProcessSuspender
             ShortcutTextBox.Text = shortcut;
         }
 
-        /// <summary>
+
         /// 处理键盘按下事件
         /// </summary>
         protected override void OnKeyDown(System.Windows.Input.KeyEventArgs e)
@@ -56,7 +56,7 @@ namespace ProcessSuspender
             UpdateTextBox();
         }
 
-        /// <summary>
+
         /// 处理确定按钮点击
         /// </summary>
         private void Confirm_Click(object sender, RoutedEventArgs e)
@@ -66,7 +66,7 @@ namespace ProcessSuspender
             Close();
         }
 
-        /// <summary>
+
         /// 处理取消按钮点击
         /// </summary>
         private void Cancel_Click(object sender, RoutedEventArgs e)

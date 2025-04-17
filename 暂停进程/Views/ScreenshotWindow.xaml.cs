@@ -18,7 +18,7 @@ namespace ProcessSuspender
         private readonly IProcessManager _processManager;
         private readonly IWindowManager _windowManager;
 
-        /// <summary>
+
         /// 构造函数
         /// </summary>
         public ScreenshotWindow(BitmapSource screenshotSource, WindowInfo windowInfo, MainWindow mainWindow,
@@ -43,7 +43,7 @@ namespace ProcessSuspender
             };
         }
 
-        /// <summary>
+
         /// 处理鼠标左键按下
         /// </summary>
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -54,7 +54,7 @@ namespace ProcessSuspender
             }
         }
 
-        /// <summary>
+
         /// 处理鼠标双击
         /// </summary>
         private void Window_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -62,7 +62,7 @@ namespace ProcessSuspender
             Close();
         }
 
-        /// <summary>
+
         /// 处理键盘按下
         /// </summary>
         private void Window_KeyDown(object sender, KeyEventArgs e)
@@ -75,7 +75,7 @@ namespace ProcessSuspender
         [DllImport("user32.dll")]
         public static extern bool GetWindowRect(IntPtr hWnd, out RECT rect);
 
-        /// <summary>
+
         /// 窗口关闭时处理
         /// </summary>
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
@@ -103,7 +103,7 @@ namespace ProcessSuspender
             _mainWindow.RemoveWindowInfo(_windowInfo);
         }
 
-        /// <summary>
+
         /// 窗口关闭后清理
         /// </summary>
         protected override void OnClosed(EventArgs e)

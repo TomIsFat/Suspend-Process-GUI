@@ -15,7 +15,7 @@ namespace ProcessSuspender.Services
             _notifyIcon = new NotifyIcon();
         }
 
-        /// <summary>
+
         /// 初始化托盘图标
         /// </summary>
         public void Initialize(EventHandler clickHandler)
@@ -25,7 +25,7 @@ namespace ProcessSuspender.Services
             _notifyIcon.Click += clickHandler;
         }
 
-        /// <summary>
+
         /// 显示托盘图标
         /// </summary>
         public void Show()
@@ -33,7 +33,7 @@ namespace ProcessSuspender.Services
             _notifyIcon.Visible = true;
         }
 
-        /// <summary>
+
         /// 隐藏托盘图标
         /// </summary>
         public void Hide()
@@ -41,7 +41,7 @@ namespace ProcessSuspender.Services
             _notifyIcon.Visible = false;
         }
 
-        /// <summary>
+
         /// 加载托盘图标
         /// </summary>
         private Icon LoadIconFromResource()
@@ -64,7 +64,7 @@ namespace ProcessSuspender.Services
             }
         }
 
-        /// <summary>
+
         /// 释放资源
         /// </summary>
         public void Dispose()

@@ -4,12 +4,12 @@ namespace ProcessSuspender.Services
 {
     public interface ISettingsService
     {
-        /// <summary>
+
         /// 获取当前设置
         /// </summary>
         Settings GetSettings();
 
-        /// <summary>
+
         /// 保存设置
         /// </summary>
         void SaveSettings(Settings settings);

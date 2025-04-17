@@ -12,7 +12,7 @@ namespace ProcessSuspender.Services
             "ProcessSuspender",
             "settings.json");
 
-        /// <summary>
+
         /// 获取当前设置
         /// </summary>
         public Settings GetSettings()
@@ -32,7 +32,7 @@ namespace ProcessSuspender.Services
             return new Settings();
         }
 
-        /// <summary>
+
         /// 保存设置
         /// </summary>
         public void SaveSettings(Settings settings)

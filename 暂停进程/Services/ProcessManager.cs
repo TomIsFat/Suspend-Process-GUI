@@ -5,6 +5,7 @@ using System.Linq;
 using System.Management;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Windows.Documents;
 
 namespace ProcessSuspender.Services
 {
@@ -63,9 +64,7 @@ namespace ProcessSuspender.Services
             "explorer", "quicker", "devenv"
         };
 
-        /// <summary>
         /// 挂起指定窗口的进程
-        /// </summary>
         public void SuspendProcess(IntPtr hwnd, bool includeChildProcesses = true)
         {
             IntPtr topLevelHwnd = GetAncestor(hwnd, GetAncestorFlags.GetRoot);
@@ -82,19 +81,12 @@ namespace ProcessSuspender.Services
             {
                 if (processId != currentProcessId && !IsProtectedProcess(processId))
                 {
-                    string originalTitle = GetWindowTitle(topLevelHwnd);
-                    if (!originalTitle.StartsWith("已挂起-"))
-                    {
-                        SetWindowText(topLevelHwnd, "已挂起-" + originalTitle);
-                    }
                     SuspendProcessCore(processId);
                 }
             }
         }
 
-        /// <summary>
         /// 恢复指定窗口的进程
-        /// </summary>
         public void ResumeProcess(IntPtr hwnd, bool includeChildProcesses = true)
         {
             IntPtr topLevelHwnd = GetAncestor(hwnd, GetAncestorFlags.GetRoot);
@@ -116,9 +108,7 @@ namespace ProcessSuspender.Services
             }
         }
 
-        /// <summary>
         /// 检查进程是否受保护
-        /// </summary>
         public bool IsProtectedProcess(int pid)
         {
             try
@@ -132,9 +122,7 @@ namespace ProcessSuspender.Services
             }
         }
 
-        /// <summary>
         /// 获取进程的所有可见窗口
-        /// </summary>
         public List<IntPtr> GetProcessVisibleWindows(int processId)
         {
             List<IntPtr> handles = new List<IntPtr>();
@@ -150,9 +138,7 @@ namespace ProcessSuspender.Services
             return handles;
         }
 
-        /// <summary>
         /// 获取子进程ID列表
-        /// </summary>
         private List<int> GetChildProcessIds(int parentPid)
         {
             List<int> childPids = new List<int>();
@@ -173,9 +159,7 @@ namespace ProcessSuspender.Services
             return childPids;
         }
 
-        /// <summary>
         /// 核心挂起进程逻辑
-        /// </summary>
         private void SuspendProcessCore(int pid)
         {
             IntPtr handle = OpenProcess(ProcessAccessFlags.SuspendResume, false, pid);
@@ -184,26 +168,16 @@ namespace ProcessSuspender.Services
             CloseHandle(handle);
         }
 
-        /// <summary>
         /// 核心恢复进程逻辑
-        /// </summary>
         private void ResumeProcessCore(int pid, IntPtr hwnd)
         {
             IntPtr handle = OpenProcess(ProcessAccessFlags.SuspendResume, false, pid);
             if (handle == IntPtr.Zero) return;
             NtResumeProcess(handle);
             CloseHandle(handle);
-
-            string currentTitle = GetWindowTitle(hwnd);
-            if (currentTitle.StartsWith("已挂起-"))
-            {
-                SetWindowText(hwnd, currentTitle.Substring("已挂起-".Length));
-            }
         }
 
-        /// <summary>
         /// 获取窗口标题
-        /// </summary>
         private string GetWindowTitle(IntPtr hwnd)
         {
             StringBuilder buff = new StringBuilder(256);

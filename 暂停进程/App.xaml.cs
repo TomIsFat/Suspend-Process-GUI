@@ -23,7 +23,7 @@ namespace ProcessSuspender
 
         private const int SW_RESTORE = 9;
 
-        /// <summary>
+
         /// 应用程序启动时执行
         /// </summary>
         /// <param name="e">启动参数</param>

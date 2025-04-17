@@ -22,7 +22,7 @@ namespace ProcessSuspender
         private readonly IKeyboardMouseEvents _globalHook;
         public ObservableCollection<WindowModel> WindowModels { get; } = new ObservableCollection<WindowModel>();
 
-        /// <summary>
+
         /// 构造函数，注入服务
         /// </summary>
         public MainWindow(IProcessManager processManager, IWindowManager windowManager,
@@ -43,7 +43,7 @@ namespace ProcessSuspender
             _trayService.Initialize(OnTrayIconClick);
         }
 
-        /// <summary>
+
         /// 处理全局键盘释放事件，检测快捷键
         /// </summary>
         private void GlobalHookKeyUp(object sender, KeyEventArgs e)
@@ -60,7 +60,7 @@ namespace ProcessSuspender
             }
         }
 
-        /// <summary>
+
         /// 更新快捷键显示文本
         /// </summary>
         private void UpdateShortcutText()
@@ -83,7 +83,7 @@ namespace ProcessSuspender
             set => SetValue(ShortcutTextProperty, value);
         }
 
-        /// <summary>
+
         /// 挂起当前鼠标下的窗口进程
         /// </summary>
         public void SuspendProcess()
@@ -120,7 +120,7 @@ namespace ProcessSuspender
             }
         }
 
-        /// <summary>
+
         /// 为挂起的窗口创建截图窗口
         /// </summary>
         private void CreateMockWindowFor(WindowInfo windowInfo)
@@ -205,7 +205,7 @@ namespace ProcessSuspender
             }
         }
 
-        /// <summary>
+
         /// 添加窗口信息到DataGrid
         /// </summary>
         private void AddWindowInfo(WindowInfo windowInfo)
@@ -228,7 +228,7 @@ namespace ProcessSuspender
             WindowModels.Add(windowModel);
         }
 
-        /// <summary>
+
         /// 处理设置快捷键按钮点击
         /// </summary>
         private void SetShortcut_Click(object sender, RoutedEventArgs e)
@@ -240,7 +240,7 @@ namespace ProcessSuspender
             }
         }
 
-        /// <summary>
+
         /// 处理恢复所有挂起按钮点击
         /// </summary>
         private void RestoreAll_Click(object sender, RoutedEventArgs e)
@@ -253,7 +253,7 @@ namespace ProcessSuspender
             WindowModels.Clear();
         }
 
-        /// <summary>
+
         /// 处理系统托盘图标点击
         /// </summary>
         private void OnTrayIconClick(object sender, EventArgs e)
@@ -262,7 +262,7 @@ namespace ProcessSuspender
             WindowState = WindowState.Normal;
         }
 
-        /// <summary>
+
         /// 窗口状态改变时处理
         /// </summary>
         protected override void OnStateChanged(EventArgs e)
@@ -275,7 +275,7 @@ namespace ProcessSuspender
             base.OnStateChanged(e);
         }
 
-        /// <summary>
+
         /// 窗口关闭时清理资源
         /// </summary>
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
