@@ -97,7 +97,7 @@ namespace ProcessSuspender
             if (windowModel != null)
             {
                 windowModel.Status = "正常";
-                windowModel.ToggleSuspendText = "挂起";
+                windowModel.ToggleStatusText = "挂起";
             }
 
             _mainWindow.RemoveWindowInfo(_windowInfo);

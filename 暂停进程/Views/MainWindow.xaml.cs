@@ -24,7 +24,7 @@ namespace ProcessSuspender
 
 
         /// 构造函数，注入服务
-        /// </summary>
+
         public MainWindow(IProcessManager processManager, IWindowManager windowManager,
             ISettingsService settingsService, ITrayService trayService)
         {
@@ -45,7 +45,7 @@ namespace ProcessSuspender
 
 
         /// 处理全局键盘释放事件，检测快捷键
-        /// </summary>
+
         private void GlobalHookKeyUp(object sender, KeyEventArgs e)
         {
             var settings = _settingsService.GetSettings();
@@ -62,7 +62,7 @@ namespace ProcessSuspender
 
 
         /// 更新快捷键显示文本
-        /// </summary>
+
         private void UpdateShortcutText()
         {
             var settings = _settingsService.GetSettings();
@@ -85,11 +85,10 @@ namespace ProcessSuspender
 
 
         /// 挂起当前鼠标下的窗口进程
-        /// </summary>
+
         public void SuspendProcess()
         {
-            IntPtr hwnd = _windowManager.GetWindowUnderCursor();
-            IntPtr topLevelHwnd = _windowManager.GetTopLevelWindowUnderCursor();
+            IntPtr topLevelHwnd = _windowManager.GetTopLevelForegroundWindowHandle();
             int processId = _windowManager.GetWindowProcessId(topLevelHwnd);
 
             if (processId == System.Diagnostics.Process.GetCurrentProcess().Id || _processManager.IsProtectedProcess(processId))
@@ -102,7 +101,7 @@ namespace ProcessSuspender
             if (windowModel != null)
             {
                 windowModel.Status = "已挂起";
-                windowModel.ToggleSuspendText = "恢复";
+                windowModel.ToggleStatusText = "恢复";
                 windowModel.WindowInfo.WindowHandles = _processManager.GetProcessVisibleWindows(processId);
                 CreateMockWindowFor(windowModel.WindowInfo);
             }
@@ -122,7 +121,7 @@ namespace ProcessSuspender
 
 
         /// 为挂起的窗口创建截图窗口
-        /// </summary>
+
         private void CreateMockWindowFor(WindowInfo windowInfo)
         {
             try
@@ -207,7 +206,7 @@ namespace ProcessSuspender
 
 
         /// 添加窗口信息到DataGrid
-        /// </summary>
+
         private void AddWindowInfo(WindowInfo windowInfo)
         {
             if (windowInfo == null || windowInfo.ProcessId <= 0 || string.IsNullOrEmpty(windowInfo.Title))
@@ -221,7 +220,6 @@ namespace ProcessSuspender
                 Title = windowInfo.Title,
                 ProcessId = windowInfo.ProcessId,
                 Status = "已挂起",
-                ToggleSuspendText = "恢复",
                 WindowInfo = windowInfo
             };
 
@@ -230,7 +228,7 @@ namespace ProcessSuspender
 
 
         /// 处理设置快捷键按钮点击
-        /// </summary>
+
         private void SetShortcut_Click(object sender, RoutedEventArgs e)
         {
             var shortcutWindow = new ShortcutBindingWindow(this, _settingsService);
@@ -242,7 +240,7 @@ namespace ProcessSuspender
 
 
         /// 处理恢复所有挂起按钮点击
-        /// </summary>
+
         private void RestoreAll_Click(object sender, RoutedEventArgs e)
         {
             foreach (var window in Application.Current.Windows.OfType<ScreenshotWindow>().ToList())
@@ -255,7 +253,7 @@ namespace ProcessSuspender
 
 
         /// 处理系统托盘图标点击
-        /// </summary>
+
         private void OnTrayIconClick(object sender, EventArgs e)
         {
             Show();
@@ -264,7 +262,7 @@ namespace ProcessSuspender
 
 
         /// 窗口状态改变时处理
-        /// </summary>
+
         protected override void OnStateChanged(EventArgs e)
         {
             if (WindowState == WindowState.Minimized)
@@ -277,7 +275,7 @@ namespace ProcessSuspender
 
 
         /// 窗口关闭时清理资源
-        /// </summary>
+
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
             _trayService.Dispose();
@@ -288,7 +286,7 @@ namespace ProcessSuspender
 
         /// <summaryolr
         /// 移除窗口信息
-        /// </summary>
+
         public void RemoveWindowInfo(WindowInfo windowInfo)
         {
             var windowModel = WindowModels.FirstOrDefault(wm => wm.WindowInfo == windowInfo);

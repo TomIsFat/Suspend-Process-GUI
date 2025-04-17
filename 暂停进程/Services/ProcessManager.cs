@@ -123,13 +123,13 @@ namespace ProcessSuspender.Services
         }
 
         /// 获取进程的所有可见窗口
-        public List<IntPtr> GetProcessVisibleWindows(int processId)
+        public List<IntPtr> GetProcessVisibleWindows(int pid)
         {
             List<IntPtr> handles = new List<IntPtr>();
             EnumWindows((hWnd, lParam) =>
             {
-                GetWindowThreadProcessId(hWnd, out int pid);
-                if (pid == processId && IsWindowVisible(hWnd))
+                GetWindowThreadProcessId(hWnd, out int pid1);
+                if (pid1 == pid && IsWindowVisible(hWnd))
                 {
                     handles.Add(hWnd);
                 }

@@ -31,6 +31,6 @@ namespace ProcessSuspender.Services
         /// </summary>
         /// <param name="processId">进程ID</param>
         /// <returns>可见窗口句柄列表</returns>
-        List<IntPtr> GetProcessVisibleWindows(int processId);
+        List<IntPtr> GetProcessVisibleWindows(int pid);
     }
 }

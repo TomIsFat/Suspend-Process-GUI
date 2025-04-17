@@ -22,6 +22,15 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="标题" Binding="{Binding Title}" Width="*"/>
                 <DataGridTextColumn Header="PID" Binding="{Binding ProcessId}" Width="70"/>
+                <DataGridTemplateColumn Header="状态" Width="Auto">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="{Binding ToggleStatusText}" 
+                                    Command="{Binding ToggleSuspendCommand}" 
+                                    CommandParameter="{Binding}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTemplateColumn Header="移除" Width="Auto">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
