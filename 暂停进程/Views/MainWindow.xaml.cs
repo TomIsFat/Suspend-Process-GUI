@@ -11,6 +11,9 @@ using 暂停进程;
 using MessageBox = System.Windows.MessageBox;
 using Application = System.Windows.Application;
 using System.Windows.Threading;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using KeyEventArgs = System.Windows.Forms.KeyEventArgs;
 
 namespace ProcessSuspender
 {
@@ -67,28 +70,47 @@ namespace ProcessSuspender
         }
 
         // 定时器检查自动冻结逻辑
-        private void AutoSuspendTimer_Tick(object sender, EventArgs e)
+        private async void AutoSuspendTimer_Tick(object sender, EventArgs e)
         {
-            IntPtr foregroundHwnd = _windowManager.GetTopLevelForegroundWindowHandle();
-            int foregroundPid = _windowManager.GetWindowProcessId(foregroundHwnd);
+            // 记录开始时间
+            var stopwatch = Stopwatch.StartNew();
 
-            foreach (var model in WindowModels.ToList())
+            try
             {
-                if (model.IsAutoSuspendEnabled && model.Status == "正常")
+                IntPtr foregroundHwnd = _windowManager.GetTopLevelForegroundWindowHandle();
+                int foregroundPid = _windowManager.GetWindowProcessId(foregroundHwnd);
+
+                var modelsSnapshot = WindowModels.ToList();
+
+                foreach (var model in modelsSnapshot)
                 {
-                    if (model.ProcessId == foregroundPid)
+                    if (model.IsAutoSuspendEnabled && model.Status == "正常")
                     {
-                        model.WindowInfo.AutoSuspendTimer = 0; // 前台时重置计时器
-                    }
-                    else
-                    {
-                        model.WindowInfo.AutoSuspendTimer += 3; // 后台时计时器加3秒
-                        if (model.WindowInfo.AutoSuspendTimer >= model.WindowInfo.AutoSuspendTime)
+                        if (model.ProcessId == foregroundPid)
                         {
-                            model.ToggleSuspendCommand.Execute(null); // 触发冻结
+                            model.WindowInfo.AutoSuspendTimer = 0; // 前台时重置计时器
+                        }
+                        else
+                        {
+                            model.WindowInfo.AutoSuspendTimer += 3; // 后台时计时器加3秒
+                            if (model.WindowInfo.AutoSuspendTimer >= model.WindowInfo.AutoSuspendTime)
+                            {
+                                // 在 UI 线程上执行冻结操作
+                                await Dispatcher.InvokeAsync(() => model.ToggleSuspendCommand.Execute(null));
+                            }
                         }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"自动冻结定时器错误: {ex.Message}");
+            }
+            finally
+            {
+                stopwatch.Stop();
+                // 记录执行时间，方便调试
+                Console.WriteLine($"AutoSuspendTimer_Tick 执行耗时: {stopwatch.ElapsedMilliseconds}ms");
             }
         }
 
@@ -169,7 +191,8 @@ namespace ProcessSuspender
                         Left = logicalRect.X,
                         Top = logicalRect.Y,
                         Width = logicalRect.Width,
-                        Height = logicalRect.Height
+                        Height = logicalRect.Height,
+                        WindowState = WindowState.Minimized // 设置窗口为最小化
                     };
 
                     if (iconHandle != IntPtr.Zero)
