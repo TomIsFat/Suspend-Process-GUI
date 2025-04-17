@@ -10,6 +10,7 @@ using System.Linq;
 using 暂停进程;
 using MessageBox = System.Windows.MessageBox;
 using Application = System.Windows.Application;
+using System.Windows.Threading;
 
 namespace ProcessSuspender
 {
@@ -20,11 +21,10 @@ namespace ProcessSuspender
         private readonly ISettingsService _settingsService;
         private readonly ITrayService _trayService;
         private readonly IKeyboardMouseEvents _globalHook;
+        private readonly DispatcherTimer _autoSuspendTimer;
         public ObservableCollection<WindowModel> WindowModels { get; } = new ObservableCollection<WindowModel>();
 
-
         // 构造函数，注入服务
-
         public MainWindow(IProcessManager processManager, IWindowManager windowManager,
             ISettingsService settingsService, ITrayService trayService)
         {
@@ -41,11 +41,17 @@ namespace ProcessSuspender
             _globalHook.KeyUp += GlobalHookKeyUp;
 
             _trayService.Initialize(OnTrayIconClick);
+
+            // 初始化自动冻结定时器
+            _autoSuspendTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(3)
+            };
+            _autoSuspendTimer.Tick += AutoSuspendTimer_Tick;
+            _autoSuspendTimer.Start();
         }
 
-
         // 处理全局键盘释放事件，检测快捷键
-
         private void GlobalHookKeyUp(object sender, KeyEventArgs e)
         {
             var settings = _settingsService.GetSettings();
@@ -60,6 +66,31 @@ namespace ProcessSuspender
             }
         }
 
+        // 定时器检查自动冻结逻辑
+        private void AutoSuspendTimer_Tick(object sender, EventArgs e)
+        {
+            IntPtr foregroundHwnd = _windowManager.GetTopLevelForegroundWindowHandle();
+            int foregroundPid = _windowManager.GetWindowProcessId(foregroundHwnd);
+
+            foreach (var model in WindowModels.ToList())
+            {
+                if (model.IsAutoSuspendEnabled && model.Status == "正常")
+                {
+                    if (model.ProcessId == foregroundPid)
+                    {
+                        model.WindowInfo.AutoSuspendTimer = 0; // 前台时重置计时器
+                    }
+                    else
+                    {
+                        model.WindowInfo.AutoSuspendTimer += 3; // 后台时计时器加3秒
+                        if (model.WindowInfo.AutoSuspendTimer >= model.WindowInfo.AutoSuspendTime)
+                        {
+                            model.ToggleSuspendCommand.Execute(null); // 触发冻结
+                        }
+                    }
+                }
+            }
+        }
 
         // 更新快捷键显示文本
         private void UpdateShortcutText()
@@ -81,7 +112,6 @@ namespace ProcessSuspender
             get => (string)GetValue(ShortcutTextProperty);
             set => SetValue(ShortcutTextProperty, value);
         }
-
 
         // 挂起当前前台下的窗口进程
         public void SuspendProcess()
@@ -105,12 +135,12 @@ namespace ProcessSuspender
                 Handle = topLevelHwnd,
                 Title = _windowManager.GetWindowTitle(topLevelHwnd),
                 ProcessId = processId,
-                WindowHandles = _processManager.GetProcessVisibleWindows(processId)
+                WindowHandles = _processManager.GetProcessVisibleWindows(processId),
+                AutoSuspendTimer = 0 // 重置计时器
             };
             CreateMockWindowFor(windowInfo);
             AddWindowInfo(windowInfo);
         }
-
 
         // 为挂起的窗口创建截图窗口
         public void CreateMockWindowFor(WindowInfo windowInfo)
@@ -195,7 +225,6 @@ namespace ProcessSuspender
             }
         }
 
-
         // 添加窗口信息到DataGrid
         public void AddWindowInfo(WindowInfo windowInfo)
         {
@@ -210,12 +239,13 @@ namespace ProcessSuspender
                 Title = windowInfo.Title,
                 ProcessId = windowInfo.ProcessId,
                 Status = "冻结",
-                WindowInfo = windowInfo
+                WindowInfo = windowInfo,
+                IsAutoSuspendEnabled = windowInfo.IsAutoSuspendEnabled,
+                AutoSuspendTime = windowInfo.AutoSuspendTime
             };
 
             WindowModels.Add(windowModel);
         }
-
 
         // 移除窗口信息
         public void RemoveWindowInfo(WindowInfo windowInfo)
@@ -237,7 +267,6 @@ namespace ProcessSuspender
             }
         }
 
-
         // 触发器处理恢复所有挂起按钮点击
         private void RestoreAll_Click(object sender, RoutedEventArgs e)
         {
@@ -249,18 +278,14 @@ namespace ProcessSuspender
             WindowModels.Clear();
         }
 
-
         // 触发器处理系统托盘图标点击
-
         private void OnTrayIconClick(object sender, EventArgs e)
         {
             Show();
             WindowState = WindowState.Normal;
         }
 
-
         // 触发器窗口状态改变时处理
-
         protected override void OnStateChanged(EventArgs e)
         {
             if (WindowState == WindowState.Minimized)
@@ -271,10 +296,10 @@ namespace ProcessSuspender
             base.OnStateChanged(e);
         }
 
-
         // 触发器窗口关闭时清理资源
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
+            _autoSuspendTimer.Stop();
             _trayService.Dispose();
             _globalHook.KeyUp -= GlobalHookKeyUp;
             _globalHook.Dispose();

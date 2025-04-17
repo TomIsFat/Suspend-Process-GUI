@@ -54,5 +54,14 @@ namespace ProcessSuspender.Models
         /// 进程的所有窗口句柄
 
         public List<IntPtr> WindowHandles { get; set; } = new List<IntPtr>();
+
+        /// 自动冻结开关
+        public bool IsAutoSuspendEnabled { get; set; } = false;
+
+        /// 自动冻结时间（秒）
+        public int AutoSuspendTime { get; set; } = 60;
+
+        /// 自动冻结计时器（秒）
+        public int AutoSuspendTimer { get; set; } = 0;
     }
 }

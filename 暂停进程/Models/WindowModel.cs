@@ -13,6 +13,8 @@ namespace ProcessSuspender.Models
     {
         private string _status;
         private string _toggleStatusText;
+        private bool _isAutoSuspendEnabled;
+        private int _autoSuspendTime;
         private readonly MainWindow _mainWindow;
         private readonly IProcessManager _processManager;
         private readonly IWindowManager _windowManager;
@@ -45,6 +47,30 @@ namespace ProcessSuspender.Models
             {
                 _toggleStatusText = value;
                 OnPropertyChanged(nameof(ToggleStatusText));
+            }
+        }
+
+        /// 自动冻结开关
+        public bool IsAutoSuspendEnabled
+        {
+            get => _isAutoSuspendEnabled;
+            set
+            {
+                _isAutoSuspendEnabled = value;
+                WindowInfo.IsAutoSuspendEnabled = value;
+                OnPropertyChanged(nameof(IsAutoSuspendEnabled));
+            }
+        }
+
+        /// 自动冻结时间（秒）
+        public int AutoSuspendTime
+        {
+            get => _autoSuspendTime;
+            set
+            {
+                _autoSuspendTime = value > 0 ? value : 60; // 确保时间不为负数
+                WindowInfo.AutoSuspendTime = _autoSuspendTime;
+                OnPropertyChanged(nameof(AutoSuspendTime));
             }
         }
 
@@ -84,6 +110,8 @@ namespace ProcessSuspender.Models
             RemoveCommand = new RelayCommand(RemoveProcess);
             Status = "冻结"; // 新建的时候默认为冻结状态
             ToggleStatusText = "冻结";
+            _isAutoSuspendEnabled = false;
+            _autoSuspendTime = 60;
         }
 
         /// 切换进程冻结/运行状态

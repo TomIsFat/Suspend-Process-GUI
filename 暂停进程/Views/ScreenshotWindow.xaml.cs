@@ -13,16 +13,11 @@ namespace ProcessSuspender
 {
     public partial class ScreenshotWindow : Window
     {
-        private readonly WindowInfo _windowInfo;
-        private readonly MainWindow _mainWindow;
-        private readonly IProcessManager _processManager;
-        private readonly IWindowManager _windowManager;
+        private readonly WindowInfo _windowInfo; private readonly MainWindow _mainWindow; private readonly IProcessManager _processManager; private readonly IWindowManager _windowManager;
 
-
-        /// 构造函数
-        /// </summary>
-        public ScreenshotWindow(BitmapSource screenshotSource, WindowInfo windowInfo, MainWindow mainWindow,
-            IProcessManager processManager, IWindowManager windowManager)
+    /// 构造函数
+    public ScreenshotWindow(BitmapSource screenshotSource, WindowInfo windowInfo, MainWindow mainWindow,
+        IProcessManager processManager, IWindowManager windowManager)
         {
             InitializeComponent();
             ScreenshotImage.Source = screenshotSource;
@@ -43,9 +38,7 @@ namespace ProcessSuspender
             };
         }
 
-
         /// 处理鼠标左键按下
-        /// </summary>
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed && e.ClickCount == 1)
@@ -54,17 +47,13 @@ namespace ProcessSuspender
             }
         }
 
-
         /// 处理鼠标双击
-        /// </summary>
         private void Window_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             Close();
         }
 
-
         /// 处理键盘按下
-        /// </summary>
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
@@ -72,12 +61,11 @@ namespace ProcessSuspender
                 Close();
             }
         }
+
         [DllImport("user32.dll")]
         public static extern bool GetWindowRect(IntPtr hWnd, out RECT rect);
 
-
         /// 窗口关闭时处理
-        /// </summary>
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
             base.OnClosing(e);
@@ -98,16 +86,16 @@ namespace ProcessSuspender
             {
                 windowModel.Status = "正常";
                 windowModel.ToggleStatusText = "正常";
+                windowModel.WindowInfo.AutoSuspendTimer = 0; // 重置计时器
             }
         }
 
-
         /// 窗口关闭后清理
-        /// </summary>
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
             ScreenshotImage.Source = null;
         }
     }
+
 }

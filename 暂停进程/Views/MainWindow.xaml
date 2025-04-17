@@ -22,6 +22,14 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="标题" Binding="{Binding Title}" Width="*"/>
                 <DataGridTextColumn Header="PID" Binding="{Binding ProcessId}" Width="70"/>
+                <DataGridCheckBoxColumn Header="自动冻结" Binding="{Binding IsAutoSuspendEnabled, UpdateSourceTrigger=PropertyChanged}" Width="80"/>
+                <DataGridTemplateColumn Header="冻结时间(秒)" Width="100">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding AutoSuspendTime, UpdateSourceTrigger=PropertyChanged}" Width="80"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTemplateColumn Header="状态" Width="Auto">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
