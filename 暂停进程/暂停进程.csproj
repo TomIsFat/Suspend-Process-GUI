@@ -142,15 +142,6 @@
     <Resource Include="Resources\tuiche.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="ktaosj.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="kprojectmgr.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="luoxuan.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="pm.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
