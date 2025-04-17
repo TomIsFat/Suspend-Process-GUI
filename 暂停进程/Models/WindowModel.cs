@@ -88,7 +88,7 @@ namespace ProcessSuspender.Models
         /// 切换进程冻结/运行状态
         private void ToggleSuspend(object parameter)
         {
-            if (Status == "冻结中")
+            if (Status == "冻结")
             {
                 _processManager.ResumeProcess(WindowInfo.Handle, true);
                 _windowManager.ShowWindowNormal(WindowInfo.Handle);
@@ -97,15 +97,15 @@ namespace ProcessSuspender.Models
                     .FirstOrDefault(w => w.DataContext == WindowInfo);
                 screenshotWindow?.Close();
 
-                _mainWindow.RemoveWindowInfo(WindowInfo);
+                //_mainWindow.RemoveWindowInfo(WindowInfo);  //从列表中移除，但是现在我们不希望这样做
             }
             else
             {
-                _mainWindow.SuspendProcess();
+                _mainWindow.SuspendProcess();  // 修改这里，并非挂起前台，而是挂起当前的
             }
         }
 
-        /// 移除进程并恢复
+        /// 移除进程，从列表中删除
         private void RemoveProcess(object parameter)
         {
             _processManager.ResumeProcess(WindowInfo.Handle, true);

@@ -23,7 +23,7 @@ namespace ProcessSuspender
         public ObservableCollection<WindowModel> WindowModels { get; } = new ObservableCollection<WindowModel>();
 
 
-        /// 构造函数，注入服务
+        // 构造函数，注入服务
 
         public MainWindow(IProcessManager processManager, IWindowManager windowManager,
             ISettingsService settingsService, ITrayService trayService)
@@ -44,7 +44,7 @@ namespace ProcessSuspender
         }
 
 
-        /// 处理全局键盘释放事件，检测快捷键
+        // 处理全局键盘释放事件，检测快捷键
 
         private void GlobalHookKeyUp(object sender, KeyEventArgs e)
         {
@@ -61,8 +61,7 @@ namespace ProcessSuspender
         }
 
 
-        /// 更新快捷键显示文本
-
+        // 更新快捷键显示文本
         private void UpdateShortcutText()
         {
             var settings = _settingsService.GetSettings();
@@ -84,8 +83,7 @@ namespace ProcessSuspender
         }
 
 
-        /// 挂起当前鼠标下的窗口进程
-
+        // 挂起当前前台下的窗口进程
         public void SuspendProcess()
         {
             IntPtr topLevelHwnd = _windowManager.GetTopLevelForegroundWindowHandle();
@@ -98,11 +96,11 @@ namespace ProcessSuspender
             }
 
             var windowModel = WindowModels.FirstOrDefault(wm => wm.ProcessId == processId);
-            if (windowModel != null)
+            if (windowModel != null) // 若在主界面列表中找到了
             {
-                windowModel.Status = "已挂起";
+                windowModel.Status = "冻结";
                 windowModel.ToggleStatusText = "恢复";
-                windowModel.WindowInfo.WindowHandles = _processManager.GetProcessVisibleWindows(processId);
+                windowModel.WindowInfo.WindowHandles = _processManager.GetProcessVisibleWindows(processId);  // 将所有的可视的窗口加入WindowsInfo中
                 CreateMockWindowFor(windowModel.WindowInfo);
             }
             else
@@ -120,7 +118,7 @@ namespace ProcessSuspender
         }
 
 
-        /// 为挂起的窗口创建截图窗口
+        // 为挂起的窗口创建截图窗口
 
         private void CreateMockWindowFor(WindowInfo windowInfo)
         {
@@ -205,8 +203,7 @@ namespace ProcessSuspender
         }
 
 
-        /// 添加窗口信息到DataGrid
-
+        // 添加窗口信息到DataGrid
         private void AddWindowInfo(WindowInfo windowInfo)
         {
             if (windowInfo == null || windowInfo.ProcessId <= 0 || string.IsNullOrEmpty(windowInfo.Title))
@@ -219,7 +216,7 @@ namespace ProcessSuspender
             {
                 Title = windowInfo.Title,
                 ProcessId = windowInfo.ProcessId,
-                Status = "已挂起",
+                Status = "冻结",
                 WindowInfo = windowInfo
             };
 
@@ -227,8 +224,17 @@ namespace ProcessSuspender
         }
 
 
-        /// 处理设置快捷键按钮点击
+        // 移除窗口信息
+        public void RemoveWindowInfo(WindowInfo windowInfo)
+        {
+            var windowModel = WindowModels.FirstOrDefault(wm => wm.WindowInfo == windowInfo);
+            if (windowModel != null)
+            {
+                WindowModels.Remove(windowModel);
+            }
+        }
 
+        // 触发器设置快捷键
         private void SetShortcut_Click(object sender, RoutedEventArgs e)
         {
             var shortcutWindow = new ShortcutBindingWindow(this, _settingsService);
@@ -239,8 +245,7 @@ namespace ProcessSuspender
         }
 
 
-        /// 处理恢复所有挂起按钮点击
-
+        // 触发器处理恢复所有挂起按钮点击
         private void RestoreAll_Click(object sender, RoutedEventArgs e)
         {
             foreach (var window in Application.Current.Windows.OfType<ScreenshotWindow>().ToList())
@@ -252,7 +257,7 @@ namespace ProcessSuspender
         }
 
 
-        /// 处理系统托盘图标点击
+        // 触发器处理系统托盘图标点击
 
         private void OnTrayIconClick(object sender, EventArgs e)
         {
@@ -261,7 +266,7 @@ namespace ProcessSuspender
         }
 
 
-        /// 窗口状态改变时处理
+        // 触发器窗口状态改变时处理
 
         protected override void OnStateChanged(EventArgs e)
         {
@@ -274,26 +279,13 @@ namespace ProcessSuspender
         }
 
 
-        /// 窗口关闭时清理资源
-
+        // 触发器窗口关闭时清理资源
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
             _trayService.Dispose();
             _globalHook.KeyUp -= GlobalHookKeyUp;
             _globalHook.Dispose();
             base.OnClosing(e);
-        }
-
-        /// <summaryolr
-        /// 移除窗口信息
-
-        public void RemoveWindowInfo(WindowInfo windowInfo)
-        {
-            var windowModel = WindowModels.FirstOrDefault(wm => wm.WindowInfo == windowInfo);
-            if (windowModel != null)
-            {
-                WindowModels.Remove(windowModel);
-            }
         }
     }
 }

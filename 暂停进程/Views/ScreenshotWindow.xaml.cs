@@ -99,8 +99,6 @@ namespace ProcessSuspender
                 windowModel.Status = "正常";
                 windowModel.ToggleStatusText = "挂起";
             }
-
-            _mainWindow.RemoveWindowInfo(_windowInfo);
         }
 
 
