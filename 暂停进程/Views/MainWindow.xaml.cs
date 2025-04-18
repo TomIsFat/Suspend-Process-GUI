@@ -14,6 +14,7 @@ using System.Windows.Threading;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using KeyEventArgs = System.Windows.Forms.KeyEventArgs;
+using System.Windows.Navigation;
 
 namespace ProcessSuspender
 {
@@ -66,6 +67,10 @@ namespace ProcessSuspender
             if (isShortcutMatch)
             {
                 SuspendProcess();
+            }
+            else if (e.Control && e.Shift && e.KeyCode == System.Windows.Forms.Keys.OemQuestion) // Ctrl + Shift + /
+            {
+                RestoreAll_Click(sender, null);
             }
         }
 
@@ -326,6 +331,7 @@ namespace ProcessSuspender
             _trayService.Dispose();
             _globalHook.KeyUp -= GlobalHookKeyUp;
             _globalHook.Dispose();
+            RestoreAll_Click(e, null);
             base.OnClosing(e);
         }
     }
