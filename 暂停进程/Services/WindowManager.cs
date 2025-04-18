@@ -149,6 +149,20 @@ namespace ProcessSuspender.Services
         {
             GetWindowRect(handle, out RECT rect);
             var bounds = new Rectangle(rect.Left, rect.Top, rect.Right - rect.Left, rect.Bottom - rect.Top);
+            using (Bitmap bitmap = new Bitmap(bounds.Width, bounds.Height))
+            using (Graphics g = Graphics.FromImage(bitmap))
+            {
+                g.CopyFromScreen(new Point(bounds.Left, bounds.Top), Point.Empty, bounds.Size);
+                return new Bitmap(bitmap);
+            }
+        }
+
+
+        /// 捕获窗口截图低质量版本（但优化不太明显，放弃）
+        public Bitmap CaptureWindowLow(IntPtr handle)
+        {
+            GetWindowRect(handle, out RECT rect);
+            var bounds = new Rectangle(rect.Left, rect.Top, rect.Right - rect.Left, rect.Bottom - rect.Top);
 
             // 创建原始截图
             using (Bitmap originalBitmap = new Bitmap(bounds.Width, bounds.Height))
