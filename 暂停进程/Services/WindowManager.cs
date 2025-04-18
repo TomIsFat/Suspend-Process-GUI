@@ -225,16 +225,45 @@ namespace ProcessSuspender.Services
         /// 获取窗口图标句柄
         public IntPtr GetWindowIconHandle(IntPtr hWnd, bool bigIcon)
         {
+            // 1. 尝试通过 WM_GETICON 获取图标
             IntPtr hIcon = SendMessage(hWnd, WM_GETICON, bigIcon ? ICON_BIG : ICON_SMALL, 0);
-            if (hIcon == IntPtr.Zero)
+            if (hIcon != IntPtr.Zero)
             {
-                hIcon = Environment.Is64BitProcess
-                    ? GetClassLongPtr(hWnd, bigIcon ? GCL_HICON : GCL_HICONSM)
-                    : GetClassLong32(hWnd, bigIcon ? GCL_HICON : GCL_HICONSM);
+                return hIcon;
             }
-            return hIcon;
-        }
 
+            // 2. 尝试通过 GetClassLong 获取图标
+            hIcon = Environment.Is64BitProcess
+                ? GetClassLongPtr(hWnd, bigIcon ? GCL_HICON : GCL_HICONSM)
+                : GetClassLong32(hWnd, bigIcon ? GCL_HICON : GCL_HICONSM);
+            if (hIcon != IntPtr.Zero)
+            {
+                return hIcon;
+            }
+
+            // 3. 备用方案：从进程的可执行文件获取图标
+            try
+            {
+                int processId = GetWindowProcessId(hWnd);
+                using (var process = System.Diagnostics.Process.GetProcessById(processId))
+                {
+                    string exePath = process.MainModule.FileName;
+                    hIcon = System.Drawing.Icon.ExtractAssociatedIcon(exePath).Handle;
+                    if (hIcon != IntPtr.Zero)
+                    {
+                        return hIcon;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // 记录日志（可选）
+                System.Diagnostics.Debug.WriteLine($"Failed to extract icon from process: {ex.Message}");
+            }
+
+            // 4. 返回默认图标句柄（可选：可根据需求返回 null 或默认图标）
+            return IntPtr.Zero;
+        }
         /// 销毁图标
         public void DestroyIconSafe(IntPtr hIcon)
         {
