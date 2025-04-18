@@ -149,11 +149,27 @@ namespace ProcessSuspender.Services
         {
             GetWindowRect(handle, out RECT rect);
             var bounds = new Rectangle(rect.Left, rect.Top, rect.Right - rect.Left, rect.Bottom - rect.Top);
-            using (Bitmap bitmap = new Bitmap(bounds.Width, bounds.Height))
-            using (Graphics g = Graphics.FromImage(bitmap))
+
+            // 创建原始截图
+            using (Bitmap originalBitmap = new Bitmap(bounds.Width, bounds.Height))
+            using (Graphics g = Graphics.FromImage(originalBitmap))
             {
                 g.CopyFromScreen(new Point(bounds.Left, bounds.Top), Point.Empty, bounds.Size);
-                return new Bitmap(bitmap);
+
+                // 缩小到原图的1/4（可调整缩放比例）
+                int scaledWidth = originalBitmap.Width / 4;
+                int scaledHeight = originalBitmap.Height / 4;
+
+                // 创建低质量缩略图
+                Bitmap scaledBitmap = new Bitmap(scaledWidth, scaledHeight);
+                using (Graphics scaledG = Graphics.FromImage(scaledBitmap))
+                {
+                    scaledG.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+                    scaledG.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighSpeed;
+                    scaledG.DrawImage(originalBitmap, 0, 0, scaledWidth, scaledHeight);
+                }
+
+                return scaledBitmap;
             }
         }
 

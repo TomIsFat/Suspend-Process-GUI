@@ -68,10 +68,10 @@ namespace ProcessSuspender
             {
                 SuspendProcess();
             }
-            else if (e.Control && e.Shift && e.KeyCode == System.Windows.Forms.Keys.OemQuestion) // Ctrl + Shift + /
-            {
-                RestoreAll_Click(sender, null);
-            }
+            //else if (e.Control && e.Shift && e.KeyCode == System.Windows.Forms.Keys.OemQuestion) // Ctrl + Shift + /
+            //{
+            //    RestoreAll_Click(e, null);
+            //}
         }
 
         // 定时器检查自动冻结逻辑
@@ -153,20 +153,28 @@ namespace ProcessSuspender
             }
 
             var windowModel = WindowModels.FirstOrDefault(wm => wm.ProcessId == processId);
-            if (windowModel != null) // 若在主界面列表中找到了，先删除再添加
+            if (windowModel != null) // 若在主界面列表中找到了
             {
-                WindowModels.Remove(windowModel);
+                windowModel.WindowInfo.Handle = topLevelHwnd;
+                windowModel.WindowInfo.Title = _windowManager.GetWindowTitle(topLevelHwnd);
+                windowModel.WindowInfo.ProcessId = processId;
+                windowModel.WindowInfo.WindowHandles = _processManager.GetProcessVisibleWindows(processId);
+                windowModel.WindowInfo.AutoSuspendTimer = 0;
+                CreateMockWindowFor(windowModel.WindowInfo);
             }
-            WindowInfo windowInfo = new WindowInfo
-            {
-                Handle = topLevelHwnd,
-                Title = _windowManager.GetWindowTitle(topLevelHwnd),
-                ProcessId = processId,
-                WindowHandles = _processManager.GetProcessVisibleWindows(processId),
-                AutoSuspendTimer = 0 // 重置计时器
-            };
-            CreateMockWindowFor(windowInfo);
-            AddWindowInfo(windowInfo);
+            else 
+            { 
+                WindowInfo windowInfo = new WindowInfo
+                {
+                    Handle = topLevelHwnd,
+                    Title = _windowManager.GetWindowTitle(topLevelHwnd),
+                    ProcessId = processId,
+                    WindowHandles = _processManager.GetProcessVisibleWindows(processId),
+                    AutoSuspendTimer = 0, // 重置计时器
+                };
+                CreateMockWindowFor(windowInfo);
+                AddWindowInfo(windowInfo);
+            }
         }
 
         // 为挂起的窗口创建截图窗口
